@@ -1,0 +1,76 @@
+# Environment confguration
+As BNfinder2 runs on Python 2 we have to set up the environment.
+
+## Install pyenv
+Install build dependencies:
+```bash
+sudo apt update
+sudo apt install -y \
+  build-essential \
+  libssl-dev \
+  zlib1g-dev \
+  libbz2-dev \
+  libreadline-dev \
+  libsqlite3-dev \
+  wget curl llvm \
+  libncurses5-dev libncursesw5-dev \
+  xz-utils tk-dev \
+  libffi-dev
+```
+
+Download and install pyenv:
+```bash
+curl https://pyenv.run | bash
+```
+
+Add pyenv to `~/.bashrc`:
+```bash
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+```
+
+Reload shell:
+```bash
+exec $SHELL
+```
+
+## Install Python 2.7
+Install python2.7.18:
+```bash
+pyenv install 2.7.18
+```
+
+Set up your local python version in your project directory:
+```bash
+cd project/dir/name
+pyenv local 2.7.18
+python --version
+```
+Version check should return `2.7.18`. Also, a `.python-version` file should be created in your directory.
+
+## Set up virtual environment with virtualenv (compatible with python2)
+Install `virtualenv` package with `pip` (if not already installed):
+```bash
+pip install virtualenv
+```
+
+Create and activate the virtual environment with python2 of chosen name (here `.venv2`):
+```bash
+virtualenv -p python2 .venv2
+source .venv2/bin/activate
+```
+
+## Install BNfinder
+Inside of the virtual environment:
+```bash
+pip install BNfinder
+```
+
+Check if it worked:
+```bash
+bnf --help
+```
+
+# Part 1
+...
