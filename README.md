@@ -106,3 +106,11 @@ bnf --help
 
 # Should print options for BNfinder library
 ```
+
+
+# How to run
+Enter docker container by folowing above commands and run:
+```bash
+python2.7 src/create_random_network.py 
+```
+
