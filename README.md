@@ -1,4 +1,4 @@
-# Environment confguration
+# (OPTION 1) Environment confguration  (IGNORE IF U ARE USING MacOS)
 As BNfinder2 runs on Python 2 we have to set up the environment.
 
 ## Install pyenv
@@ -73,7 +73,7 @@ bnf --help
 ```
 
 
-## Running BNfinder (Python 2) on macOS Apple Silicon using Docker
+## (OPTION 2) Environment confguration on macos using Docker
 
 # Prerequisites
 
