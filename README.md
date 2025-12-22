@@ -72,5 +72,37 @@ Check if it worked:
 bnf --help
 ```
 
-# Part 1
-...
+
+## Running BNfinder (Python 2) on macOS Apple Silicon using Docker
+
+# Prerequisites
+
+Docker Desktop for macOS:
+https://www.docker.com/products/docker-desktop/
+
+Verify Docker is installed:
+
+```bash
+docker --version
+
+# Build image
+
+docker build --platform=linux/amd64 -t bnfinder2 .
+
+
+# Run container from image
+
+docker run -it --rm --platform=linux/amd64 \
+  -v "$PWD":/work -w /work \
+  bnfinder2
+
+
+# Final checks
+python2.7 --version
+
+# Should print something like: Python 2.7.18
+
+bnf --help
+
+# Should print options for BNfinder library
+```
