@@ -364,14 +364,31 @@ class BN():
                 f.write(str(att_counts[i]/(trajectory_len/sampling_frequency+1.0))+"\n")
 
 
+  
+
     def save_graph_structure(self, path):
-        """Save graph structure as list of edge pairs."""
-        edges = sorted(self.graph_structure.edges())
+        """
+        Save BN structure (edges) + Boolean rules to ONE plain text file.
+
+        If path has no extension, '.txt' is appended.
+        """
+        root, ext = os.path.splitext(path)
+        if ext == "":
+            path = path + ".txt"
+
         with open(path, "w") as f:
-            for u, v in edges:
-                f.write(u + " " + v + "\n")
+            # ---- Graph structure (parents -> node)
+            f.write("# EDGES\n")
+            for u, v in sorted(self.graph_structure.edges()):
+                f.write("{} {}\n".format(u, v))
 
+            # ---- Boolean update rules
+            f.write("\n# RULES\n")
+            for node, fun in zip(self.node_names, self.functions):
+                f.write("{} = {}\n".format(node, str(fun)))
 
+    
+    
 def main(
     outpath,
     n_nodes = None,
@@ -406,10 +423,12 @@ def main(
 
 
 if __name__ == "__main__":
+# simple usage case:
+# python2.7 scripts/generate_bn_trajectory_dataset.py -o generated_trajectories/test1 -g graphs/test1
 
     parser = argparse.ArgumentParser(description="Create a random Boolean network and generate trajectory datasets.")
 
-    parser.add_argument("-n", "--n-nodes", type=int, default=None, help="Number of nodes in the random Boolean network.")
+    parser.add_argument("-n", "--n-nodes", type=int, default=5, help="Number of nodes in the random Boolean network.")
     parser.add_argument("-b", "--bnet-path", type=str, default=None, help="A .bnet boolean network file (if n_nodes not provided)")
     parser.add_argument("-s", "--sync", action="store_true", help="Use synchronous updates (default: asynchronous).")
     parser.add_argument("-p", "--allow-self-parent", action="store_true", help="Allow nodes to have themselves as parents.")
