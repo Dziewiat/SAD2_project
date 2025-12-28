@@ -72,5 +72,10 @@ Check if it worked:
 bnf --help
 ```
 
-# Part 1
-...
+# Run generate_bn_trajectory_dataset.py script
+This script requires python3 and its dependencies are listed in `requirements3.txt` file.
+It is used to generate a random boolean network and sample a random trajectory dataset from it. For usage options run:
+```bash
+python scripts/generate_bn_trajectory.py --help
+```
+Additionally, the boolean network with all of its methods is implemented as the `BN()` class in the script, so that it can be used in other scripts, e.g. for comparison of different boolean networks.
