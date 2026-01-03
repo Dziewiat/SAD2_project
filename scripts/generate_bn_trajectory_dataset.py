@@ -5,6 +5,8 @@ import boolean
 import random
 import networkx as nx
 
+from tqdm import tqdm
+
 
 def generate_random_walks(graph, n_walks, walk_length, seed=None):
     """
@@ -149,7 +151,8 @@ class BN():
         edges = []
 
         for node, fun in zip(nodes, self.functions):
-            for parent in fun.symbols:
+            parents = [str(sym).strip("~") for sym in fun.get_literals()]   # Get negatively ans positively correlated parents
+            for parent in parents:
                 edges.append((str(parent), node))
 
         G.add_nodes_from(nodes)
@@ -289,7 +292,7 @@ class BN():
         nodes = [self.__int_to_state(i) for i in range(2**self.num_nodes)]
         edges = set([])
 
-        for node in nodes:
+        for node in tqdm(nodes, desc="State transition system generation"):
             neighbors = self.get_neighbor_states(node)
             for neighbor in neighbors:
                 edges.add((self.__state_to_binary_str(node), self.__state_to_binary_str(neighbor)))
@@ -307,10 +310,8 @@ class BN():
             Returns:
                 list[set[tuple[int]]]: A list of sts attractors. Each attractor is a set of states.
         """
-        sts = self.generate_state_transition_system()
-
         attractors = []
-        for attractor in nx.attracting_components(sts):
+        for attractor in nx.attracting_components(self.sts):
             attractors.append(attractor)
 
         return attractors
@@ -323,6 +324,8 @@ class BN():
             trajectory_len = 10,
             sampling_frequency = 1,
             random_seed = 42,
+            return_attractor_percentage = False,
+            save_attractor_percengage = True,
         ):
         """
         Generate and save trajectory dataset to a chosen filepath.
@@ -340,7 +343,7 @@ class BN():
             att_counts.append(0)
             for j, state in enumerate(traj):
                 if j%sampling_frequency == 0:
-                    exp_row.append("EXP"+str(i)+":"+str(j//sampling_frequency))
+                    exp_row.append("EXP"+str(i)+":"+str(j))   #//sampling_frequency))  NOTE bnf also works with larger sampling intervals
                     for node_state, node_row in zip(state, node_rows):
                         node_row.append((node_state))
                     # Check if state is in an attractor
@@ -352,18 +355,23 @@ class BN():
             for node_row in node_rows:
                 f.write("\n" + "\t".join(node_row))
 
-        # Check and save the percentage of attractor states per trajectory
-        name, ext = os.path.splitext(filepath)
-        att_filepath = name + "_attractors" + ext
-        
-        with open(att_filepath, "w") as f:
-            # Header
-            f.write("trajectory,attractor_state_percentage\n")
-            for i in range(n_trajectories):
-                f.write("EXP"+str(i)+",")
-                f.write(str(att_counts[i]/(trajectory_len/sampling_frequency+1.0))+"\n")
+
+        if save_attractor_percengage:
+            # Check and save the percentage of attractor states per trajectory
+            name, ext = os.path.splitext(filepath)
+            att_filepath = name + "_attractors" + ext
+            
+            with open(att_filepath, "w") as f:
+                # Header
+                f.write("trajectory,attractor_state_percentage\n")
+                for i in range(n_trajectories):
+                    f.write("EXP"+str(i)+",")
+                    f.write(str(att_counts[i]/(trajectory_len/sampling_frequency+1.0))+"\n")
 
 
+        if return_attractor_percentage:
+            # Return attractor percentage across all trajectories
+            return sum(att_counts) / (len(node_rows[0])-1.0)
   
 
     def save_graph_structure(self, path):
@@ -424,7 +432,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Create a random Boolean network and generate trajectory datasets.")
 
-    parser.add_argument("-n", "--n-nodes", type=int, default=5, help="Number of nodes in the random Boolean network.")
+    parser.add_argument("-n", "--n-nodes", type=int, default=5, help="Number of nodes in the random Boolean network (default: 5).")
     parser.add_argument("-b", "--bnet-path", type=str, default=None, help="A .bnet boolean network file (if n_nodes not provided)")
     parser.add_argument("-s", "--sync", action="store_true", help="Use synchronous updates (default: asynchronous).")
     parser.add_argument("-p", "--allow-self-parent", action="store_true", help="Allow nodes to have themselves as parents.")

@@ -72,10 +72,12 @@ Check if it worked:
 bnf --help
 ```
 
+Inside your python2.7 environment install requirements listed in `requirements.txt` file.
 
-## (OPTION 2) Environment confguration on macos using Docker
 
-# Prerequisites
+# (OPTION 2) Environment confguration on macos using Docker
+
+## Prerequisites
 
 Docker Desktop for macOS:
 https://www.docker.com/products/docker-desktop/
@@ -107,20 +109,31 @@ bnf --help
 # Should print options for BNfinder library
 ```
 
-
-# How to run
-Enter docker container by folowing above commands and run:
-```bash
-python2.7 src/create_random_network.py 
-```
-
-
-# Run generate_bn_trajectory_dataset.py script
-Inside your python2.7 environment install requirements listed in `requirements.txt` file.
+# Generate boolean network trajectories
 The script is used to generate a random boolean network and sample a random trajectory dataset from it. For usage options run:
 ```bash
 python2.7 scripts/generate_bn_trajectory_dataset.py --help
 ```
+
+Example usage with random boolean network:
+```bash
+python2.7 scripts/generate_bn_trajectory_dataset.py -n 5 -o generated_trajectories/test1.txt -g graphs/test1.txt
+```
+
+Example usage with a predefined network structure (`.bnet` file):
+```bash
+python2.7 scripts/generate_bn_trajectory_dataset.py -b models/test_model.bnet -o generated_trajectories/test1.txt -g graphs/test1.txt
+```
+
+## Advanced usage
 Additionally, the boolean network with all of its methods is implemented as the `BN()` class in the script, so that it can be used in other scripts, e.g. for comparison of different boolean networks.
 
 Constructing a `BN()` object with a higher number of nodes (>12) can be time consuming. When computing multiple trajectory datasets from one boolean network architecture, it is recomended to first: construct the `BN()` object, second: sample multiple datasets using the same `BN()` instance with `BN.generate_trajectory_dataset()` method.
+
+# Generate multiple trajectory datasets from a parameter grid
+The script is used to generate multiple trajectory datasets from a parameter grid. The simplest method for now is to modify the grid at the end of `scripts/generate_bn_trajectories_from_grid.py` and `OUTPUT_DIR` variable and run:
+```bash
+python2.7 scripts/generate_bn_trajectories_from_grid.py 
+```
+
+Generating networks with `n_nodes` > 12 can take a few minutes (exponential complexity of generating a state transition system), so it is recomended you make yourself some coffee after initializing the script.
