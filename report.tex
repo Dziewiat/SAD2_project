@@ -46,14 +46,57 @@ Larger networks (e.g., \texttt{n\_nodes} $>$ 12) significantly increased runtime
   \item \textbf{Reconstruction setup.} We used the simplest BNFinder invocation:
   \texttt{bnf -e input1.txt -n output1.sif -l 3}. The key adjustment was \texttt{-l 3}, which limits each Boolean function to at most three parents; this greatly reduces the search space and speeds up reconstruction.
 
-  \item \textbf{Scoring functions.} We evaluated candidate network structures using two BNFinder-recommended scores: \emph{Minimal Description Length (MDL)} and \emph{BDe (Bayesian--Dirichlet equivalence)}.
+  \item \textbf{Scoring functions.} We evaluated candidate network structures using two scores recommended for BNFinder: \emph{Minimal Description Length (MDL)} and \emph{BDe (Bayesian--Dirichlet equivalence)}.
 
-\item \textbf{Loss functions (accuracy metrics).} We measured structural prediction error using \texttt{edge jaccard distance} and \texttt{graph edit distance}: together they capture both \emph{local edge overlap} (exact wiring agreement) and \emph{global topological discrepancy} (how many edits are needed to transform one graph into the other). We chose these metrics because they are widely used in graph-structure evaluation and provide complementary views of reconstruction quality.
-
-\item \textbf{Final conclusions.}
-We ran a wide range of parameter configurations, and presenting all plots here would be unreadable, so we selected only the most informative ones. The results varied substantially---from near-perfect reconstruction to almost no correct edges. Overall, the most influential factor was dataset size: more trajectories and longer trajectories consistently improved performance (Figure~3). This matches intuition, since larger datasets provide more information for inference. We also observed a slight advantage for synchronous transitions, which is intuitive because synchronous updates are deterministic and, at each step, constrain the Boolean transition functions of all nodes. In contrast, the choice of evaluation metric (\texttt{edge\_jaccard\_distance} vs.\ \texttt{graph\_edit\_distance}) did not affect the qualitative conclusions, and we did not observe a consistent difference between the MDL and BDe scoring methods. Finally, we observed a slight negative correlation between network size and reconstruction accuracy (Figure~4), which is expected since larger networks are generally harder to infer accurately.
+\item \textbf{Loss functions (accuracy metrics).} We measured structural prediction error using \texttt{edge jaccard distance} and \texttt{graph edit distance (GED)}: together they capture both \emph{local edge overlap} (exact wiring agreement) and \emph{global topological discrepancy} (how many edits are needed to transform one graph into the other). We chose these metrics because they are widely used in graph-structure evaluation and provide complementary views of reconstruction quality.
+\end{itemize}
 
 
+\section{Dataset parameters vs. reconstruction quality}
+To assess whether parameter values were significantly associated with final reconstruction accuracy, Spearman’s rank correlation coefficients and their corresponding p-values were computed between the loss function values and the parameter values. The results are presented in the table below:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\multicolumn{1}{|c|}{\textit{Loss function}} & \multicolumn{2}{c|}{\textit{Jaccard}} & \multicolumn{2}{c|}{\textit{GED}} \\
+\hline
+\textit{Scoring function} & \textit{BDe} & \textit{MDL} & \textit{BDe} & \textit{MDL} \\
+\hline
+\texttt{sync} & 0.01 & 0.02 & -0.12 & \textbf{-0.13} \\
+\hline
+\texttt{sampling\_frequency} & \textbf{0.34} & \textbf{0.33} & 0.09 & 0.07 \\
+\hline
+\texttt{n\_trajectories} & \textbf{-0.40} & \textbf{-0.37} & -0.10 & -0.07 \\
+\hline
+\texttt{trajectory\_len} & \textbf{-0.31} & \textbf{-0.29} & -0.04 & - 0.03 \\
+\hline
+\texttt{n\_nodes} & 0.00 & \textbf{0.13} & \textbf{0.76} & \textbf{0.79} \\
+\hline
+\texttt{attractor\_state\_percentage} & \textbf{-0.24} & \textbf{-0.26} & \textbf{-0.31} & \textbf{-0.33} \\
+\hline
+\end{tabular}
+\caption{Spearman's rank correlation coefficient values between loss function and parameter values. Coefficient values which had their corresponding \texttt{p-value < 0.05} (observed correlation is unlikely due to random chance) were marked in \textbf{bold}.}
+\end{table}
+
+\textbf{Important note.} For both loss functions, lower values correspond to improved reconstruction accuracy. Consequently, a negative correlation coefficient indicates that as the parameter values increase, reconstruction accuracy improves.
+
+
+\section{Analysis}
+Correlation analysis between loss function values and parameter values revealed several noteworthy patterns.
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Scoring functions.} There are no notable differences in correlation trends between \texttt{MDL} and \texttt{BDe} BNFinder scoring functions.
+    \item \textbf{Loss functions.} As \texttt{edge jaccard distance} and \texttt{graph edit distance} capture different aspects of graph reconstruction accuracy, their correlations with parameter values varied. Nonetheless, employing both metrics allowed us to obtain complementary perspectives on reconstruction quality, as each parameter exhibited statistically significant correlations with one or both measures.
+
+    \item \textbf{Parameters:}
+    \begin{itemize}
+        \item \textbf{sync} (0 for False, 1 for True) - slightly negative correlation with \texttt{GED} suggests a positive effect of synchronusly generated trajectories on reconstruction accuracy.
+        \item \textbf{sampling\_frequency} - a relatively strong positive correlation with \texttt{edge jaccard distance} indicates that as the number of time steps between consecutive sampled states increases, reconstructing the graph becomes more difficult.
+        \item \textbf{attractor\_state\_percentage} - a consistent negative correlation with both \texttt{edge jaccard distance} and \texttt{graph edit distance} suggests that a higher proportion of attractor states relative to transient states in the dataset facilitates graph structure inference.
+        \newline
+        \item \textbf{n\_trajectories} and \textbf{trajectory\_len} - a relatively strong negative correlation with \texttt{edge jaccard distance} (Figure~3) indicates that larger datasets facilitate more accurate graph reconstruction.
+        
 \begin{figure}[h]
   \centering
   \begin{minipage}{0.49\textwidth}
@@ -70,16 +113,30 @@ We ran a wide range of parameter configurations, and presenting all plots here w
   \label{fig:jaccard_mdl_side_by_side}
 \end{figure}
 
+    \item \textbf{n\_nodes} - network size exhibited a very strong positive correlation with \texttt{GED} (Figure~4), indicating that larger networks are more difficult to infer accurately.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.75\linewidth]{bar_jaccard_nodes_MDL.png}
-  \caption{Edge Jaccard distance under MDL as a function of network size (\texttt{n\_nodes}).}
+  \includegraphics[width=0.75\linewidth]{bar_ged_nodes_MDL.png}
+  \caption{GED under MDL as a function of network size (\texttt{n\_nodes}).}
   \label{fig:jaccard_mdl_nodes}
 \end{figure}
 
-
+    \end{itemize}
 \end{itemize}
+
+
+\textbf{Final conclusions.}
+We evaluated a wide range of parameter configurations; however, presenting all resulting plots would reduce the readability of this report. Therefore, we selected only the most informative visualizations for inclusion here. All plots are available in the accompanying repository under the \texttt{plots/} directory.
+
+The results varied substantially, ranging from near-perfect reconstructions to cases with almost no correctly inferred edges. For networks of fixed size, the most influential factor was dataset size: increasing both the number of trajectories and their length consistently improved reconstruction performance (Figure~3). This observation aligns with intuition, as larger datasets provide more information for accurate inference. Conversely, reducing the number of states in the dataset by increasing the sampling frequency had a detrimental effect on performance.
+
+We also observed a slight advantage for synchronous transitions, which is expected since synchronous updates are deterministic and, at each step, constrain the Boolean transition functions of all nodes simultaneously. The number of attractor states was another important factor, with a higher proportion of attractor states leading to improved reconstruction quality. We hypothesize this effect may arise because the algorithm can analyze the same set of transitions multiple times, thereby establishing stronger and more reliable connections between nodes.
+
+The evaluation metrics (\texttt{edge\_jaccard\_distance} and \texttt{graph\_edit\_distance}) provided complementary insights into the relationships between model parameters and graph reconstruction quality. In contrast, we did not observe a consistent difference in performance between the MDL and BDe scoring methods. Finally, a strong negative correlation between network size and reconstruction accuracy was observed (Figure~4), which is expected given the increased difficulty of accurately inferring larger networks.
+
+\textbf{Insights for the next task.} Based on our analysis, we gained several important insights that guided the design of the subsequent task. For the inference of a real biological model, we therefore propose generating a dataset using the following parameter settings: \texttt{sync} = True, \texttt{sampling\_frequency} = 1, \texttt{attractor\_state\_percentage} - best to choose a random seed that allows us to generate a dataset with a high percentage of attractor states, \texttt{n\_trajectories} = 20 (or higher), \texttt{trajectory\_len} = 100 (or higher), \texttt{n\_nodes} - the smaller the dataset the easier it will probably be to infer.
+
 
 \section{Challenges encountered}
 \begin{itemize}[leftmargin=*]
