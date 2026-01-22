@@ -1,0 +1,13 @@
+v_Cactus	+	v_Toll
+v_Dif	+	v_Dorsal
+v_Dif	-	v_MyD88
+v_Dif	-	v_Spz
+v_Dorsal	+	v_Dif
+v_Dorsal	+	v_Targets
+v_MyD88	+	v_Tube
+v_Spz	+	v_Cactus
+v_Targets	-	v_Toll
+v_Targets	-	v_Tube
+v_Toll	+	v_MyD88
+v_Tube	+	v_Pelle
+v_Tube	-	v_Targets

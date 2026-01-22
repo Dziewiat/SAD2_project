@@ -1,0 +1,5 @@
+v_Adenylate_cyclase	+	v_Calcineurin
+v_Adenylate_cyclase	+	v_Exocytosis
+v_Adenylate_cyclase	+	v_Protein_Kinase_A
+v_Dopamine	+	v_Phospholipase_C
+v_Phospholipase_C	+	v_Calcineurin

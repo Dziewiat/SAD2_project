@@ -1,0 +1,6 @@
+v_Adenylate_cyclase	+	v_DARPP32
+v_Dopamine	+	v_Phospholipase_C
+v_Dopamine_Receptor_2	+	v_Calcium
+v_Glutamate_Receptor	+	v_Exocytosis
+v_Phospholipase_C	+	v_Calcineurin
+v_Protein_Kinase_A	-	v_Protein_Phosphatase_1
