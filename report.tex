@@ -50,20 +50,59 @@ Larger networks (e.g., \texttt{n\_nodes} $>$ 12) significantly increased runtime
 
   \item \textbf{Scoring functions.} We evaluated candidate network structures using two scores recommended for BNFinder: \emph{Minimal Description Length (MDL)} and \emph{Bayesian--Dirichlet equivalence (BDe)}.
 
-\item \textbf{Loss functions (accuracy metrics).} We measured structural prediction error using \texttt{edge jaccard distance} and \texttt{graph edit distance (GED)}: together they capture both \emph{local edge overlap} (exact wiring agreement) and \emph{global topological discrepancy} (how many edits are needed to transform one graph into the other). We chose these metrics because they are widely used in graph-structure evaluation and provide complementary views of reconstruction quality.
+\item \textbf{Loss functions (accuracy metrics).} We measured structural prediction error using \texttt{edge jaccard distance} (one minus the Jaccard similarity between graph edge sets) and \texttt{graph edit distance (GED)} (the minimum cost of transforming one graph into another through a sequence of edit operations): together they capture both \emph{local edge overlap} (exact wiring agreement) and \emph{global topological discrepancy} (how many edits are needed to transform one graph into the other). We chose these metrics because they are widely used in graph-structure evaluation and provide complementary views of reconstruction quality.
 \end{itemize}
 
+\subsection{Scoring functions vs. reconstruction quality}
+First, we assessed whether the obtained accuracy metric values followed a normal distribution within each scoring--loss function subset using the Shapiro--Wilk test. As all resulting $p$-values were below the significance level $\alpha = 0.05$ (Table~2), the null hypothesis of normality was rejected for all subsets, indicating that the accuracy metric values were not normally distributed.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lcccc}
+\hline
+ & \multicolumn{2}{c}{\textbf{Jaccard}} & \multicolumn{2}{c}{\textbf{GED}} \\
+\cline{2-5}
+ & \textbf{BDe} & \textbf{MDL} & \textbf{BDe} & \textbf{MDL} \\
+\hline
+Shapiro--Wilk statistic & 0.830 & 0.870 & 0.882 & 0.876 \\
+$p$-value               & $6.718\times10^{-16}$ & $8.570\times10^{-14}$ & $5.050\times10^{-13}$ & $1.960\times10^{-13}$ \\
+\hline
+\end{tabular}
+\caption{Shapiro--Wilk normality test results for Jaccard distance and graph edit distance (GED) under BDe and MDL scoring.}
+\label{tab:shapiro_results}
+\end{table}
+
+Given this result, we evaluated whether there were statistically significant differences in accuracy metric values between the two scoring function groups (BDe and MDL). Since the normality assumption was violated, we employed the non-parametric Mann--Whitney $U$ test. For both the \texttt{edge jaccard distance} ($U = 34339.0$, $p = 0.107$) and the \texttt{graph edit distance} (GED; $U = 32171.0$, $p = 0.798$), the results at $\alpha = 0.05$ indicated no statistically significant differences between the BDe and MDL scoring functions (Table~3). We therefore conclude that, under the evaluated conditions, the choice of scoring function does not significantly affect graph reconstruction accuracy.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lcccc}
+\hline
+ & \multicolumn{2}{c}{\textbf{Jaccard}} & \multicolumn{2}{c}{\textbf{GED}} \\
+\cline{2-5}
+ & \textbf{BDe} & \textbf{MDL} & \textbf{BDe} & \textbf{MDL} \\
+\hline
+$n$ (samples)        & 252 & 252 & 252 & 252 \\
+Median               & 0.875 & 0.848 & 11.0 & 11.0 \\
+Median difference & \multicolumn{2}{c}{0.027} & \multicolumn{2}{c}{0.0} \\
+$p$-value            & \multicolumn{2}{c}{0.107} & \multicolumn{2}{c}{0.798} \\
+$U$ statistic        & \multicolumn{2}{c}{34339.0} & \multicolumn{2}{c}{32171.0} \\
+\hline
+\end{tabular}
+\caption{Summary statistics and Mann--Whitney $U$ test results for Jaccard distance and graph edit distance (GED) under BDe and MDL scoring.}
+\label{tab:mw_summary}
+\end{table}
 
 \subsection{Dataset parameters vs. reconstruction quality}
-To assess whether parameter values were significantly associated with final reconstruction accuracy, Spearman’s rank correlation coefficients and their corresponding p-values were computed between the loss function values and the parameter values. The results are presented in the table below:
+To assess whether parameter values were significantly associated with the final reconstruction accuracy, Spearman’s rank correlation coefficients and their corresponding $p$-values were computed between the parameter values and the loss function values, given the assumed non-normality of the latter. The results are presented in Table~4.
 
 \begin{table}[h]
 \centering
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-\multicolumn{1}{|c|}{\textit{Loss function}} & \multicolumn{2}{c|}{\textit{Jaccard}} & \multicolumn{2}{c|}{\textit{GED}} \\
+\multicolumn{1}{|c|}{\textbf{Loss function}} & \multicolumn{2}{c|}{\textbf{Jaccard}} & \multicolumn{2}{c|}{\textbf{GED}} \\
 \hline
-\textit{Scoring function} & \textit{BDe} & \textit{MDL} & \textit{BDe} & \textit{MDL} \\
+\textbf{Scoring function} & \textbf{BDe} & \textbf{MDL} & \textbf{BDe} & \textbf{MDL} \\
 \hline
 \texttt{sync} & 0.01 & 0.02 & -0.12 & \textbf{-0.13} \\
 \hline
@@ -78,7 +117,7 @@ To assess whether parameter values were significantly associated with final reco
 \texttt{attractor\_state\_percentage} & \textbf{-0.24} & \textbf{-0.26} & \textbf{-0.31} & \textbf{-0.33} \\
 \hline
 \end{tabular}
-\caption{Spearman's rank correlation coefficient values between loss function and parameter values. Coefficient values which had their corresponding \texttt{p-value < 0.05} (observed correlation is unlikely due to random chance) were marked in \textbf{bold}.}
+\caption{Spearman's rank correlation coefficient values between loss function and parameter values. Coefficient values which had their corresponding $p$-value $< \alpha = 0.05$ (observed correlation is unlikely due to random chance) were marked in \textbf{bold}.}
 \end{table}
 
 \textbf{Important note.} For both loss functions, lower values correspond to improved reconstruction accuracy. Consequently, a negative correlation coefficient indicates that as the parameter values increase, reconstruction accuracy improves.
@@ -96,7 +135,6 @@ Correlation analysis between loss function values and parameter values revealed 
         \item \textbf{sync} (0 for False, 1 for True) - slightly negative correlation with \texttt{GED} suggests a positive effect of synchronusly generated trajectories on reconstruction accuracy.
         \item \textbf{sampling\_frequency} - a relatively strong positive correlation with \texttt{edge jaccard distance} indicates that as the number of time steps between consecutive sampled states increases, reconstructing the graph becomes more difficult.
         \item \textbf{attractor\_state\_percentage} - a consistent negative correlation with both \texttt{edge jaccard distance} and \texttt{graph edit distance} suggests that a higher proportion of attractor states relative to transient states in the dataset facilitates graph structure inference.
-        \newline
         \item \textbf{n\_trajectories} and \textbf{trajectory\_len} - a relatively strong negative correlation with \texttt{edge jaccard distance} (Figure~3) indicates that larger datasets facilitate more accurate graph reconstruction.
         
 \begin{figure}[h]
@@ -167,7 +205,8 @@ Toll pathway & 9 & 2 & 11 \\
 Neurotransmitter signaling pathway & 14 & 2 & 20 \\
 \bottomrule
 \end{tabular}
-\caption{Overview of the biological Boolean network models used in the study.}
+\caption{Overview of the biological Boolean network models used in the study. Inputs (also referred to as source nodes) are variables that have no incoming regulatory interactions. These nodes represent external signals or upstream components whose activity is not governed by other elements within the modeled system. They are treated as free variables, meaning their update function is omitted.
+Regulations correspond to directed interactions between variables in the network.}
 \label{tab:bio_models}
 \end{table}
 
@@ -280,6 +319,18 @@ Validation on two biological models: the Toll pathway and neurotransmitter signa
 
   \item \textbf{Computational cost of the sweep.} To meaningfully assess how inference quality depends on key parameters (e.g., transition mode, network size etc.), we needed to run evaluations for a few hours, which limited how many additional combinations we could explore. To reduce runtime, we parallelized runs where possible and used BNFinder's \texttt{-l} option to cap the maximum number of parents per node, substantially decreasing computational burden.
 \end{itemize}
+
+
+\section{Code and data availability}
+All code used for trajectory dataset generation, analysis, and visualization, together with the generated datasets, the biological models employed, and the resulting plots, is available in our GitHub repository: https://github.com/Dziewiat/SAD2\_project/tree/main.
+
+
+\section{Contributions}
+\begin{itemize}
+    \item \textbf{Authors:} Agata Paluch, Michał Zmyślony, Mikołaj Dziewiatowski, Norbert Szala
+    \item \textbf{Contributions:} In Part 1, \textbf{Mikołaj} implemented the Boolean Network model and trajectory dataset generation using both single parameter sets and parameter grids. \textbf{Michał} inferred dynamic Bayesian network structures from the grid-generated datasets using BNFinder and evaluated inference performance with respect to dataset characteristics, scoring functions, and two structure-based graph distance measures. In Part 2, \textbf{Norbert} adapted the software pipeline to process real biological data, conducted an iterative parameter sweep to identify optimal parameter sets, and produced comparative plots illustrating the relationship between parameter values and reconstruction quality. \textbf{Agata} reconstructed real biological model graphs using BNFinder with the identified optimal parameters and summarized the biological analyses in a report. Collectively, these contributions supported both the methodological development and the biological validation presented in this study.
+\end{itemize}
+
 
 \begin{thebibliography}{9}
 
